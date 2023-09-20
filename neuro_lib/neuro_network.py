@@ -6,6 +6,7 @@ from .neuron import Neuron
 
 class NeuroLayer:
     def __init__(self, input_count: int, neuron_count: int, activation_func: ActivationFunction) -> None:
+        self.__activation_func = activation_func
         self.weights = [[random() for _ in range(input_count)] for _ in range(neuron_count)]
         self.offset_weight = [random() for _ in range(neuron_count)]
         self.neurons = tuple(Neuron(activation_func) for _ in range(neuron_count))
@@ -14,6 +15,9 @@ class NeuroLayer:
         result = []
         for i, neuron in enumerate(self.neurons):
             S = 0
+            if len(inputs) != len(self.weights[i]):
+                raise IndexError(f"Length of input not equals length of weights: "
+                                 f"{len(inputs)} != {len(self.weights[i])}")
             for j, x in enumerate(inputs):
                 S += x * self.weights[i][j]
             S += self.offset_weight[i]
@@ -23,8 +27,10 @@ class NeuroLayer:
     def change_weights(self, x: list[float], y: list[float], reference: list[float], learning_rate: float) -> None:
         for i, neuron_weights in enumerate(self.weights):
             for j in range(len(neuron_weights)):
-                neuron_weights[j] = neuron_weights[j] - learning_rate * x[j] * (y[i] - reference[i])
-            self.offset_weight[i] = self.offset_weight[i] - learning_rate * (y[i] - reference[i])
+                neuron_weights[j] = (neuron_weights[j] - learning_rate * x[j] * (y[i] - reference[i])
+                                     * self.__activation_func.diff_calculate(self.neurons[i].S))
+            self.offset_weight[i] = (self.offset_weight[i] - learning_rate * (y[i] - reference[i])
+                                     * self.__activation_func.diff_calculate(self.neurons[i].S))
 
     def get_weights(self) -> list[list[float]]:
         return [*self.weights, self.offset_weight]
@@ -40,9 +46,12 @@ class NeuroNetwork:
             return
 
         for _ in range(epochs):
+            E = 0
             for i, x in enumerate(inputs):
                 y = self.predict([x])[0]
                 self.layers[-1].change_weights(x, y, reference[i], self.learning_rate)
+                E += sum([(_y - _t) ** 2 for _y, _t in zip(y, reference[i])])
+            print(f'E: {E / 2: .10f}')
 
     def predict(self, inputs: list[list[float | int]]) -> list[list[float]]:
         result = []
