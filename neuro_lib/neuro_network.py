@@ -41,19 +41,28 @@ class NeuroNetwork:
         self.learning_rate = learning_rate
         self.layers = layers
 
-    def learn(self, inputs: list[list[float | int]], reference: list[list[float]], epochs: int) -> None:
+    def learn(self, inputs: list[list[float]], reference: list[list[float]],
+              epochs: int = None, error: float = None) -> list[float]:
+        if epochs is None and error is None:
+            raise ValueError()
         if len(inputs) != len(reference):
-            return
+            raise ValueError()
 
-        for _ in range(epochs):
-            E = 0
-            for i, x in enumerate(inputs):
-                y = self.predict([x])[0]
-                self.layers[-1].change_weights(x, y, reference[i], self.learning_rate)
-                E += sum([(_y - _t) ** 2 for _y, _t in zip(y, reference[i])])
-            print(f'E: {E / 2: .10f}')
+        E = []
+        if epochs is not None:
+            for _ in range(epochs):
+                e = self.__learn_step(inputs, reference)
+                E.append(e)
+                print(f'E: {e: .10f}')
+        else:
+            while (e := self.__learn_step(inputs, reference)) > error:
+                E.append(e)
+                print(f'E: {e: .10f}')
+            E.append(e)
+            print(f'E: {e: .10f}')
+        return E
 
-    def predict(self, inputs: list[list[float | int]]) -> list[list[float]]:
+    def predict(self, inputs: list[list[float]]) -> list[list[float]]:
         result = []
         for input_image in inputs:
             X = input_image
@@ -61,3 +70,11 @@ class NeuroNetwork:
                 X = layer.calculate(X)
             result.append(X)
         return result
+
+    def __learn_step(self, inputs: list[list[float]], reference: list[list[float]]) -> float:
+        E = 0
+        for i, x in enumerate(inputs):
+            y = self.predict([x])[0]
+            self.layers[-1].change_weights(x, y, reference[i], self.learning_rate)
+            E += sum([(_y - _t) ** 2 for _y, _t in zip(y, reference[i])])
+        return E / 2
