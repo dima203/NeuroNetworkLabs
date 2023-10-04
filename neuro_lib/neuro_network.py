@@ -37,7 +37,8 @@ class NeuroLayer:
 
 
 class NeuroNetwork:
-    def __init__(self, input_count: int, learning_rate: float, *layers: NeuroLayer) -> None:
+    def __init__(self, input_count: int, *layers: NeuroLayer, learning_rate: float | str = 'adaptive') -> None:
+        self.adaptive = learning_rate == 'adaptive'
         self.learning_rate = learning_rate
         self.layers = layers
 
@@ -75,6 +76,8 @@ class NeuroNetwork:
         E = 0
         for i, x in enumerate(inputs):
             y = self.predict([x])[0]
+            if self.adaptive:
+                self.learning_rate = 1 / (1 + sum(_x ** 2 for _x in x))
             self.layers[-1].change_weights(x, y, reference[i], self.learning_rate)
             E += sum([(_y - _t) ** 2 for _y, _t in zip(y, reference[i])])
         return E / 2
