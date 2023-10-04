@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from math import exp
 
 
 class ActivationFunction(ABC):
@@ -26,3 +27,15 @@ class LinearFunction(ActivationFunction):
 
     def diff_calculate(self, x: float) -> float:
         return 1
+
+
+class SigmoidFunction(ActivationFunction):
+    def __init__(self, a: float = 1, b: float = 0):
+        self.a = a
+        self.b = b
+
+    def calculate(self, x: float) -> float:
+        return self.a / (1 + exp(-x)) - self.b
+
+    def diff_calculate(self, x: float) -> float:
+        return self.a * exp(-x) / (exp(-x) + 1) ** 2
