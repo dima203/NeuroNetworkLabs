@@ -10,9 +10,10 @@ class NeuroLayer:
         self.weights = [[random() for _ in range(input_count)] for _ in range(neuron_count)]
         self.offset_weight = [random() for _ in range(neuron_count)]
         self.neurons = tuple(Neuron(activation_func) for _ in range(neuron_count))
+        self.outputs = []
 
     def calculate(self, inputs: list[float]) -> list[float]:
-        result = []
+        self.outputs = []
         for i, neuron in enumerate(self.neurons):
             S = 0
             if len(inputs) != len(self.weights[i]):
@@ -21,16 +22,19 @@ class NeuroLayer:
             for j, x in enumerate(inputs):
                 S += x * self.weights[i][j]
             S += self.offset_weight[i]
-            result.append(neuron.calculate(S))
-        return result
+            self.outputs.append(neuron.calculate(S))
+        return self.outputs
 
-    def change_weights(self, x: list[float], y: list[float], reference: list[float], learning_rate: float) -> None:
+    def change_weights(self, x: list[float], errors: list[float], learning_rate: float) -> list[float]:
+        result_errors = [0 for _ in range(len(self.weights[0]))]
         for i, neuron_weights in enumerate(self.weights):
             for j in range(len(neuron_weights)):
-                neuron_weights[j] = (neuron_weights[j] - learning_rate * x[j] * (y[i] - reference[i])
+                result_errors[j] = errors[i] * self.__activation_func.diff_calculate(self.neurons[i].S) * neuron_weights[j]
+                neuron_weights[j] = (neuron_weights[j] - learning_rate * x[j] * errors[i]
                                      * self.__activation_func.diff_calculate(self.neurons[i].S))
-            self.offset_weight[i] = (self.offset_weight[i] - learning_rate * (y[i] - reference[i])
+            self.offset_weight[i] = (self.offset_weight[i] - learning_rate * errors[i]
                                      * self.__activation_func.diff_calculate(self.neurons[i].S))
+        return result_errors
 
     def get_weights(self) -> list[list[float]]:
         return [*self.weights, self.offset_weight]
@@ -78,6 +82,12 @@ class NeuroNetwork:
             y = self.predict([x])[0]
             if self.adaptive:
                 self.learning_rate = 1 / (1 + sum(_x ** 2 for _x in x))
-            self.layers[-1].change_weights(x, y, reference[i], self.learning_rate)
+            errors = [y - t for y, t in zip(y, reference[i])]
+            for j in range(len(self.layers) - 1, -1, -1):
+                if j != 0:
+                    X = self.layers[j - 1].outputs
+                else:
+                    X = x
+                errors = self.layers[j].change_weights(X, errors, self.learning_rate)
             E += sum([(_y - _t) ** 2 for _y, _t in zip(y, reference[i])])
         return E / 2

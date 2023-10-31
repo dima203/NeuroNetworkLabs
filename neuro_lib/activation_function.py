@@ -21,6 +21,17 @@ class BipolarStepFunction(ActivationFunction):
         return 1
 
 
+class StepFunction(ActivationFunction):
+    def calculate(self, x: float) -> float:
+        if x >= 0:
+            return 1
+        else:
+            return 0
+
+    def diff_calculate(self, x: float) -> float:
+        return 1
+
+
 class LinearFunction(ActivationFunction):
     def calculate(self, x: float) -> float:
         return x
