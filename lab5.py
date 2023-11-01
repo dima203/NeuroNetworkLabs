@@ -31,6 +31,6 @@ if __name__ == '__main__':
     hidden_layer1 = NeuroLayer(20, 5, LinearFunction())
     layer = NeuroLayer(5, 8, StepFunction())
     neuro_network = NeuroNetwork(20, hidden_layer1, layer, learning_rate=0.3)
-    errors = neuro_network.learn(inputs, references, epochs=50)
+    errors = neuro_network.learn(inputs, references, epochs=100)
     print(neuro_network.predict(inputs))
-    print(neuro_network.predict([[0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0]]))
+    print(neuro_network.predict([[0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0]]))
