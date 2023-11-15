@@ -1,3 +1,5 @@
+from matplotlib import pyplot
+
 import random
 import time
 
@@ -16,21 +18,23 @@ if __name__ == '__main__':
     vector7 = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     vector8 = [1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1]
 
-    inputs = [vector1, vector2, vector3, vector4, vector5, vector6, vector7, vector8]
+    inputs = [vector5, vector4, vector8]
     references = [
-        [1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
     ]
 
-    hidden_layer1 = NeuroLayer(20, 5, LinearFunction())
-    layer = NeuroLayer(5, 8, StepFunction())
+    hidden_layer1 = NeuroLayer(20, 3, LinearFunction())
+    layer = NeuroLayer(3, 3, StepFunction())
     neuro_network = NeuroNetwork(20, hidden_layer1, layer, learning_rate=0.3)
-    errors = neuro_network.learn(inputs, references, epochs=50)
+    errors = neuro_network.learn(inputs, references, epochs=20)
+    pyplot.plot(errors)
+    pyplot.show()
     print(neuro_network.predict(inputs))
-    print(neuro_network.predict([[0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0]]))
+    print(neuro_network.predict([[1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0],
+                                 [1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+                                 [1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1]]))
+    print(neuro_network.predict([[1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0],
+                                 [0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+                                 [1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1]]))
