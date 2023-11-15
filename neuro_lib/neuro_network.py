@@ -60,7 +60,9 @@ class NeuroNetwork:
                 E.append(e)
                 print(f'E: {e: .10f}')
         else:
-            while (e := self.__learn_step(inputs, reference)) > error:
+            e = 1
+            while e > error:
+                e = self.__learn_step(inputs, reference)
                 E.append(e)
                 print(f'E: {e: .10f}')
             E.append(e)
@@ -82,12 +84,15 @@ class NeuroNetwork:
             y = self.predict([x])[0]
             if self.adaptive:
                 self.learning_rate = 1 / (1 + sum(_x ** 2 for _x in x))
-            errors = [y - t for y, t in zip(y, reference[i])]
-            for j in range(len(self.layers) - 1, -1, -1):
-                if j != 0:
-                    X = self.layers[j - 1].outputs
-                else:
-                    X = x
-                errors = self.layers[j].change_weights(X, errors, self.learning_rate)
+            self.__change_weights(x, y, reference[i])
             E += sum([(_y - _t) ** 2 for _y, _t in zip(y, reference[i])])
         return E / 2
+
+    def __change_weights(self, x: list[float], y: list[float], reference: list[float]) -> None:
+        errors = [y - t for y, t in zip(y, reference)]
+        for j in range(len(self.layers) - 1, -1, -1):
+            if j != 0:
+                X = self.layers[j - 1].outputs
+            else:
+                X = x
+            errors = self.layers[j].change_weights(X, errors, self.learning_rate)
