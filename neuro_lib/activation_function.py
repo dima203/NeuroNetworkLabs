@@ -49,4 +49,4 @@ class SigmoidFunction(ActivationFunction):
         return self.a / (1 + exp(-x)) - self.b
 
     def diff_calculate(self, x: float) -> float:
-        return self.a * exp(-x) / (exp(-x) + 1) ** 2
+        return self.calculate(x) * (1 - self.calculate(x))

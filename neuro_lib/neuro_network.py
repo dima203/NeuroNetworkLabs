@@ -29,7 +29,7 @@ class NeuroLayer:
         result_errors = [0 for _ in range(len(self.weights[0]))]
         for i, neuron_weights in enumerate(self.weights):
             for j in range(len(neuron_weights)):
-                result_errors[j] = errors[i] * self.__activation_func.diff_calculate(self.neurons[i].S) * neuron_weights[j]
+                result_errors[j] += errors[i] * self.__activation_func.diff_calculate(self.neurons[i].S) * neuron_weights[j]
                 neuron_weights[j] = (neuron_weights[j] - learning_rate * x[j] * errors[i]
                                      * self.__activation_func.diff_calculate(self.neurons[i].S))
             self.offset_weight[i] = (self.offset_weight[i] - learning_rate * errors[i]
@@ -55,16 +55,18 @@ class NeuroNetwork:
 
         E = []
         if epochs is not None:
-            for _ in range(epochs):
+            for epoch in range(epochs):
                 e = self.__learn_step(inputs, reference)
                 E.append(e)
-                print(f'E: {e: .10f}')
+                print(f'Epoch {epoch + 1}: {e: .10f}')
         else:
             e = 1
+            epoch = 0
             while e > error:
                 e = self.__learn_step(inputs, reference)
                 E.append(e)
-                print(f'E: {e: .10f}')
+                print(f'Epoch {epoch + 1}: {e: .10f}')
+                epoch += 1
             E.append(e)
             print(f'E: {e: .10f}')
         return E
